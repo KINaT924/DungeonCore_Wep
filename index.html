@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DungeonCore | 던전코어</title>
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <header class="dc-header">
+      <h1>던전코어 <span>DungeonCore</span></h1>
+      <p>코어를 부숴 강화된 적을 물리치고 성장해서 몽마퀸을 쓰러트리자</p>
+    </header>
+
+    <main class="dc-main">
+      <div id="dc-frame" class="dc-frame">
+        <canvas id="unity-canvas" tabindex="-1"></canvas>
+
+        <!-- 로딩 표시 -->
+        <div id="dc-loading" class="dc-overlay">
+          <div class="dc-loading-title">던전으로 내려가는 중…</div>
+          <div class="dc-bar"><div id="dc-bar-fill"></div></div>
+          <div id="dc-percent" class="dc-percent">0%</div>
+          <div class="dc-hint">처음 접속은 데이터 다운로드로 시간이 걸릴 수 있습니다. 두 번째부터는 빠르게 열립니다.</div>
+        </div>
+
+        <!-- 모바일 안내: PC 전용 게임이므로 데이터 다운로드 전에 확인 -->
+        <div id="dc-mobile" class="dc-overlay" hidden>
+          <div class="dc-loading-title">PC 전용 게임입니다</div>
+          <p>키보드와 마우스로 조작합니다.<br>PC의 크롬 또는 엣지 브라우저에서 플레이해 주세요.</p>
+          <button id="dc-mobile-continue" class="dc-button">그래도 실행하기</button>
+        </div>
+
+        <div id="unity-warning"></div>
+      </div>
+
+      <div class="dc-toolbar">
+        <span class="dc-badge">PC 전용 · 키보드 + 마우스</span>
+        <span class="dc-tip">게임 화면을 클릭하면 마우스가 잠기고, Esc로 해제됩니다</span>
+        <button id="dc-fullscreen" class="dc-button" disabled>전체화면</button>
+      </div>
+
+      <section class="dc-info">
+        <div>
+          <h2>조작</h2>
+          <table>
+            <tr><td>W A S D</td><td>이동</td></tr>
+            <tr><td>마우스</td><td>시점 회전</td></tr>
+            <tr><td>우클릭</td><td>조준</td></tr>
+            <tr><td>좌클릭</td><td>사격</td></tr>
+            <tr><td>1 / 2 / 3</td><td>권총 / 라이플 / 샷건</td></tr>
+            <tr><td>R</td><td>무기 스킬</td></tr>
+            <tr><td>Left Shift</td><td>회피</td></tr>
+            <tr><td>Esc</td><td>마우스 잠금 해제</td></tr>
+          </table>
+        </div>
+        <div>
+          <h2>게임 흐름</h2>
+          <p>일반전 120초 동안 몬스터를 처치하고 코어를 부숴 성장 카드를 모읍니다.
+             포탈이 열리면 보스전으로 이동해 몽마퀸과 싸웁니다.</p>
+          <h2>권장 환경</h2>
+          <p>PC 크롬 / 엣지 최신 버전, 전체화면 플레이 권장<br>소리가 나지 않으면 게임 화면을 한 번 클릭해 주세요.</p>
+          <p class="dc-small">v1.0.0 · Unity 6 WebGL · 사용 에셋 출처는 저장소의 CREDITS.md 참고</p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loading = document.querySelector("#dc-loading");
+      var mobile = document.querySelector("#dc-mobile");
+      var fullscreenButton = document.querySelector("#dc-fullscreen");
+
+      // 조준(우클릭) 때 브라우저 메뉴가 뜨지 않도록 막습니다
+      canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+      // 경고·오류 메시지를 게임 화면 위에 표시합니다 (Unity 기본 템플릿과 같은 역할)
+      function unityShowBanner(msg, type) {
+        var banner = document.querySelector("#unity-warning");
+        var div = document.createElement("div");
+        div.innerHTML = msg;
+        div.className = type == "error" ? "dc-error" : "dc-warning";
+        banner.appendChild(div);
+        banner.style.display = "block";
+        if (type != "error") {
+          setTimeout(function () {
+            banner.removeChild(div);
+            if (!banner.children.length) banner.style.display = "none";
+          }, 5000);
+        }
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/abf02bbde643cd6e0b6947ae59e71cfb.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/0de9cc6136b1e5417f984deab40a6eac.data.unityweb",
+        frameworkUrl: buildUrl + "/88987176b3ad231030cd356b22a76c50.framework.js.unityweb",
+        codeUrl: buildUrl + "/ff68a501e53d8baf2aa32679e4082c54.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DungeonCore",
+        productName: "DungeonCore",
+        productVersion: "1.0.0",
+        showBanner: unityShowBanner,
+      };
+
+      // 게임 데이터를 내려받아 실행합니다
+      function startGame() {
+        mobile.hidden = true;
+        loading.hidden = false;
+
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = function () {
+          createUnityInstance(canvas, config, function (progress) {
+            var percent = Math.round(progress * 100);
+            document.querySelector("#dc-bar-fill").style.width = percent + "%";
+            document.querySelector("#dc-percent").textContent = percent + "%";
+          }).then(function (unityInstance) {
+            loading.hidden = true;
+            fullscreenButton.disabled = false;
+            fullscreenButton.onclick = function () { unityInstance.SetFullscreen(1); };
+            canvas.focus();
+          }).catch(function (message) {
+            unityShowBanner("게임을 불러오지 못했습니다: " + message, "error");
+          });
+        };
+        document.body.appendChild(script);
+      }
+
+      // 모바일이면 먼저 안내하고, 사용자가 원할 때만 내려받습니다
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        loading.hidden = true;
+        mobile.hidden = false;
+        document.querySelector("#dc-mobile-continue").onclick = startGame;
+      } else {
+        startGame();
+      }
+    </script>
+  </body>
+</html>

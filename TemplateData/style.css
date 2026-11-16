@@ -1,0 +1,95 @@
+/* 던전코어 웹 페이지 스타일: 어두운 던전 톤 + 보라/금색 포인트 */
+:root {
+  --bg: #0e0b14;
+  --panel: #17121f;
+  --line: #2c2238;
+  --text: #e8e2f0;
+  --muted: #9a90a8;
+  --accent: #b58cff;
+  --gold: #e3b45a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, #22183a 0%, var(--bg) 60%);
+  color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  min-height: 100vh;
+}
+
+.dc-header { text-align: center; padding: 20px 16px 8px; }
+.dc-header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; color: var(--gold); }
+.dc-header h1 span { font-size: 15px; color: var(--muted); font-weight: normal; margin-left: 6px; }
+.dc-header p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+.dc-main { width: min(1280px, 96vw); margin: 0 auto; padding-bottom: 40px; }
+
+/* 16:9 비율을 유지하면서 창 높이에 맞게 줄어듭니다 */
+.dc-frame {
+  position: relative;
+  width: min(100%, calc((100vh - 170px) * 16 / 9));
+  min-width: 640px;
+  aspect-ratio: 16 / 9;
+  margin: 10px auto 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 40px rgba(181, 140, 255, 0.15);
+}
+
+#unity-canvas { width: 100%; height: 100%; display: block; background: #0b0910; outline: none; }
+
+.dc-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; text-align: center;
+  background: rgba(8, 6, 12, 0.92);
+}
+.dc-overlay[hidden] { display: none; }
+.dc-overlay p { color: var(--muted); line-height: 1.6; margin: 0; }
+.dc-loading-title { font-size: 20px; color: var(--gold); }
+.dc-bar { width: min(420px, 70%); height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+#dc-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width 0.2s; }
+.dc-percent { font-size: 14px; color: var(--text); }
+.dc-hint { font-size: 12px; color: var(--muted); max-width: 420px; }
+
+.dc-toolbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  width: min(100%, calc((100vh - 170px) * 16 / 9)); min-width: 640px;
+  margin: 8px auto 0; font-size: 13px; color: var(--muted);
+}
+.dc-badge { border: 1px solid var(--accent); color: var(--accent); padding: 3px 8px; border-radius: 12px; }
+.dc-tip { flex: 1; }
+
+.dc-button {
+  background: var(--panel); color: var(--text);
+  border: 1px solid var(--accent); border-radius: 4px;
+  padding: 6px 14px; font-size: 13px; cursor: pointer;
+}
+.dc-button:hover:not(:disabled) { background: #251b35; }
+.dc-button:disabled { opacity: 0.4; cursor: default; }
+
+.dc-info {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  margin-top: 28px; padding: 20px 24px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  font-size: 14px;
+}
+.dc-info h2 { font-size: 15px; color: var(--gold); margin: 0 0 8px; }
+.dc-info h2 + p, .dc-info p { color: var(--muted); line-height: 1.6; margin: 0 0 14px; }
+.dc-info table { border-collapse: collapse; width: 100%; }
+.dc-info td { padding: 4px 0; border-bottom: 1px solid var(--line); }
+.dc-info td:first-child { width: 110px; color: var(--accent); font-weight: bold; }
+.dc-small { font-size: 12px; }
+
+#unity-warning { position: absolute; left: 50%; top: 5%; transform: translateX(-50%); display: none; z-index: 5; }
+.dc-warning { background: #4a3a10; color: #ffe7a8; padding: 10px; border-radius: 4px; margin-bottom: 4px; }
+.dc-error { background: #5a1520; color: #ffd6dc; padding: 10px; border-radius: 4px; }
+
+@media (max-width: 760px) {
+  .dc-frame, .dc-toolbar { min-width: 0; width: 100%; }
+  .dc-info { grid-template-columns: 1fr; }
+}
